@@ -38,33 +38,16 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          target: ${{ matrix.target }}
-          default: true
+          override: true
 
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --target ${{ matrix.target }}
+      - name: Install cross
+        run: cargo install cross
+
+      - name: Build with cross
+        run: cross build --release --target ${{ matrix.target }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}
           path: target/${{ matrix.target }}/release/shopify_theme_cleaner
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v2
-        with:
-          path: artifacts
-
-      - name: Upload artifacts to release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: artifacts/**
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
